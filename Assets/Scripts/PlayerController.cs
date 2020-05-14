@@ -28,6 +28,11 @@ public class PlayerController : MonoBehaviour
     public float forcaPuloParede = 10f;
     public Vector3 wallOffset;
     public float wallRadius;
+    
+    public static PlayerController instance;
+    void Awake(){
+        instance = this;
+    }
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
