@@ -1,12 +1,4 @@
-﻿/* ==========
-// Title: Level Transpiler
-// Description: Reads all the pixels from a .png Pixel Art and converts it into a level design based on each pixel's color
-// Author: Lucas Araújo Castro - 13/05/2020
-// Petrolina-PE
-// WORK IN PROGRESS
-// [Não mexer, tá uma porcaria ainda ueheauhua]
-========== */
-
+﻿
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -48,13 +40,18 @@ public class LevelTranspiler : MonoBehaviour
         if (color == FindColor("#000")) {
             SetTile(0);
         }
-
         if (color == FindColor("#a2f3a2") && !playerSpawned){
+
+            GameObject.Find("Player@GameObject").transform.position = new Vector3(coord.x, coord.y,0);
+
+            playerSpawned = true;
+        }
+        /*if (color == FindColor("#a2f3a2") && !playerSpawned){
 
             SetObject(0);
 
             playerSpawned = true;
-        }
+        }*/
 
         if (color == FindColor("#797979") && !testDoor) {
             SetObject(1);
