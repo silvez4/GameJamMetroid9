@@ -4,23 +4,45 @@ using UnityEngine;
 
 public class GrapplingHook : MonoBehaviour
 {
-    private bool inUse;
-    private bool moving;
+    private bool moving = true;
 
     public LayerMask mask;
     private LineRenderer line;
 
     private Rigidbody2D rb;
     private DistanceJoint2D joint;
-    // Start is called before the first frame update
+    private GameObject player;
+
+    private Vector3 direct;
+    private float angle;
     void Start()
     {
+
+        player = PlayerController.instance.gameObject;
+
+        //TODO: change mouseposition to angle
+        direct = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        direct.z = 0;
+
+        Vector3 dir = transform.position-direct;
+        dir = transform.InverseTransformDirection(dir);
+        float angle = (Mathf.Atan2(dir.y, dir.x)*Mathf.Rad2Deg)+180;
+        transform.rotation= Quaternion.Euler(0,0,angle);
+        Debug.Log(angle);
+
+        
+
         rb = GetComponent<Rigidbody2D>();
         joint = GetComponent<DistanceJoint2D>();
-        joint.connectedBody = GameObject.Find("Player@GameObject").GetComponent<Rigidbody2D>();
-        line = GetComponent<LineRenderer>();
+
+        joint = player.AddComponent<DistanceJoint2D>();
+        joint.autoConfigureDistance = true;
+        joint.autoConfigureConnectedAnchor = false;
+        joint.connectedAnchor = Vector3.zero;
+        joint.connectedBody = GetComponent<Rigidbody2D>();
         joint.enabled = false;
 
+        line = GetComponent<LineRenderer>();
     }
 
     void Update(){
@@ -30,36 +52,32 @@ public class GrapplingHook : MonoBehaviour
             joint.autoConfigureDistance = false;
         }
 
-
-
-        if (Input.GetKeyDown(KeyCode.E) && !inUse){
-        //rb.AddForce(new Vector2(3000,3000)); 
-        moving = true;
-        inUse = true;
+        if (Input.GetKeyDown(KeyCode.Mouse0) || Input.GetButtonDown("Jump")){
+            DestroyHook();
         }
     }
-    // Update is called once per frame
+
     void FixedUpdate()
     {
-        var points = new Vector3[2];
-        points[0] = transform.position;
-        points[1] = PlayerController.instance.transform.position;
-        line.SetPositions(points);
-        if (inUse){
-            if (moving){
-                if (Vector3.Distance(transform.position, joint.connectedBody.transform.position) > 8)
-                    Destroy(gameObject);
-                transform.Translate(0.1f,0.1f,0);
-            }else{
-               joint.distance = Mathf.MoveTowards(joint.distance,1.2f, 0.2f);
-                //joint.connectedAnchor = new Vector2(Mathf.MoveTowards(joint.connectedAnchor.x,0, 0.09f), Mathf.Lerp(joint.connectedAnchor.y, 1.2f, 0.05f));
-            }
+        var pts = new Vector3[2];
+        pts[0] = transform.position;
+        pts[1] = player.transform.position;
 
-        }
-        else{
-           transform.position = PlayerController.instance.transform.position;
-        }
+     line.SetPositions(pts);
+
+            if (moving){
+                if (Vector3.Distance(transform.position, player.transform.position) > 8)
+                    DestroyHook();
+
+                transform.Translate(0.6f,0,0);
+                //transform.position = Vector3.MoveTowards(transform.position, direct, 0.8f);
+            }else{
+               joint.distance = Mathf.MoveTowards(joint.distance,1.2f, 0.25f);
+            }
     }
 
-
+    private void DestroyHook(){
+        Destroy(joint);
+        Destroy(gameObject);
+    }
 }
